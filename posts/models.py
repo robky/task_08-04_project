@@ -13,12 +13,22 @@ class Group(models.Model):
         return self.title
 
 
+class Tag(models.Model):
+    name = models.CharField(max_length=32)
+
+    def __str__(self):
+        return self.name
+
+
 class Post(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="posts", blank=True, null=True)
-    image = models.ImageField(upload_to='posts/', null=True, blank=True)  # поле для картинки
+    group = models.ForeignKey(
+        Group, on_delete=models.CASCADE, related_name="posts", blank=True, null=True
+    )
+    image = models.ImageField(upload_to='posts/', null=True, blank=True)
+    tag = models.ManyToManyField(Tag, through='TagPost')
 
     def __str__(self):
         return self.text
@@ -37,3 +47,11 @@ class Follow(models.Model):
 
     class Meta:
         unique_together = ("user", "author")
+
+
+class TagPost(models.Model):
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.tag} {self.post}'
